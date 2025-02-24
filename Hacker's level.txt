@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحقق من الرمز</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #ccc;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            height: 100vh;
+            overflow: auto; /* Allow scrolling if needed */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .input-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            width: 90vw; /* 90% of viewport width on desktop */
+            height: 70vh; /* 70% of viewport height on desktop */
+            max-width: 1200px; /* Optional: cap for very large screens */
+            background: linear-gradient(135deg, #2b2b2b, #4a4a4a);
+            border: 2px solid #ff1a1a;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: inset 0 0 10px rgba(255, 0, 0, 0.3),
+                        0 5px 15px rgba(0, 0, 0, 0.8);
+            box-sizing: border-box;
+        }
+        .input-container::before,
+        .input-container::after {
+            content: '';
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: #666;
+            border-radius: 50%;
+            box-shadow: inset 0 0 3px #000;
+        }
+        .input-container::before { top: 20px; left: 20px; }
+        .input-container::after { top: 20px; right: 20px; }
+        label {
+            margin: 0;
+            color: #ff4d4d;
+            font-weight: bold;
+            font-size: 24px;
+        }
+        input[type="number"] {
+            width: 60px;
+            height: 60px;
+            text-align: center;
+            font-size: 28px;
+            background-color: #1a1a1a;
+            color: #ff4d4d;
+            border: 2px solid #ff1a1a;
+            border-radius: 5px;
+            box-shadow: inset 0 0 5px rgba(255, 0, 0, 0.5);
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #ff6666;
+            box-shadow: 0 0 8px #ff1a1a;
+        }
+        button {
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 20px;
+            background-color: #ff1a1a;
+            border: none;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(255, 0, 0, 0.5);
+        }
+        button:hover {
+            background-color: #ff3333;
+        }
+        #successMessage {
+            display: none;
+            color: #00cc00;
+            font-size: 32px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        #errorMessage, #explosionMessage {
+            display: none;
+            color: #ff4d4d;
+            font-size: 24px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        @keyframes shake {
+            0% { transform: translate(0, 0); }
+            10% { transform: translate(-10px, 5px); }
+            20% { transform: translate(10px, -5px); }
+            30% { transform: translate(-8px, 3px); }
+            40% { transform: translate(8px, -3px); }
+            50% { transform: translate(-5px, 2px); }
+            60% { transform: translate(5px, -2px); }
+            70% { transform: translate(-3px, 1px); }
+            80% { transform: translate(3px, -1px); }
+            90% { transform: translate(-1px, 0px); }
+            100% { transform: translate(0, 0); }
+        }
+        .explode {
+            animation: shake 0.7s ease-in-out;
+        }
+        #explosionOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 165, 0, 0.9), rgba(255, 0, 0, 0.5), rgba(0, 0, 0, 0));
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        @keyframes flash {
+            0% { opacity: 1; }
+            20% { opacity: 0.8; }
+            60% { opacity: 0.4; }
+            100% { opacity: 0; }
+        }
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .input-container {
+                width: 100vw; /* Full width on mobile */
+                height: 50vh; /* Half height for mobile */
+                padding: 10px;
+                flex-wrap: wrap; /* Wrap inputs if needed */
+            }
+            label {
+                font-size: 18px;
+            }
+            input[type="number"] {
+                width: 50px;
+                height: 50px;
+                font-size: 22px;
+            }
+            button {
+                padding: 10px 20px;
+                font-size: 16px;
+            }
+            #successMessage {
+                font-size: 24px;
+            }
+            #errorMessage, #explosionMessage {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="input-container">
+        <label>رقم 1: <input type="number" id="digit1" min="0" max="9"></label>
+        <label>رقم 2: <input type="number" id="digit2" min="0" max="9"></label>
+        <label>رقم 3: <input type="number" id="digit3" min="0" max="9"></label>
+        <label>رقم 4: <input type="number" id="digit4" min="0" max="9"></label>
+        <label>رقم 5: <input type="number" id="digit5" min="0" max="9"></label>
+    </div>
+    <button id="checkButton">تحقق</button>
+    <div id="successMessage">✓ مبروك فوز الليفل!</div>
+    <div id="errorMessage">الرمز غير صحيح، حاول مرة أخرى.</div>
+    <div id="explosionMessage">💥 القنبلة انفجرت!</div>
+    <div id="explosionOverlay"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        const checkButton = document.getElementById('checkButton');
+        const explosionOverlay = document.getElementById('explosionOverlay');
+        let attempts = 0;
+        const maxAttempts = 3;
+
+        checkButton.addEventListener('click', function() {
+            const digit1 = document.getElementById('digit1').value;
+            const digit2 = document.getElementById('digit2').value;
+            const digit3 = document.getElementById('digit3').value;
+            const digit4 = document.getElementById('digit4').value;
+            const digit5 = document.getElementById('digit5').value;
+            const code = digit1 + digit2 + digit3 + digit4 + digit5;
+
+            if (code === "19472") {
+                document.getElementById('successMessage').style.display = 'block';
+                document.getElementById('errorMessage').style.display = 'none';
+                document.getElementById('explosionMessage').style.display = 'none';
+                document.body.style.backgroundColor = '#0a3d0a';
+                confetti({
+                    particleCount: 300,
+                    spread: 120,
+                    origin: { y: 0.5 },
+                    colors: ['#ff0000', '#00ff00', '#0000ff'],
+                    angle: 90,
+                    drift: 1
+                });
+                setTimeout(() => confetti({
+                    particleCount: 200,
+                    spread: 90,
+                    origin: { y: 0.7 }
+                }), 500);
+            } else {
+                attempts++;
+                if (attempts >= maxAttempts) {
+                    document.getElementById('explosionMessage').style.display = 'block';
+                    document.getElementById('errorMessage').style.display = 'none';
+                    document.getElementById('successMessage').style.display = 'none';
+                    document.body.classList.add('explode');
+                    explosionOverlay.style.animation = 'flash 1.5s ease-out';
+                    document.body.style.backgroundColor = '#ff1a1a';
+                    confetti({
+                        particleCount: 200,
+                        spread: 180,
+                        origin: { y: 0.5 },
+                        colors: ['#ff4500', '#ff8c00', '#ff0000', '#333'],
+                        scalar: 2,
+                        decay: 0.9,
+                        drift: 2
+                    });
+                    setTimeout(() => {
+                        document.body.classList.remove('explode');
+                        explosionOverlay.style.animation = 'none';
+                        explosionOverlay.style.opacity = '0';
+                        document.body.style.backgroundColor = '#1a1a1a';
+                        document.getElementById('explosionMessage').style.display = 'none';
+                        attempts = 0;
+                    }, 1500);
+                } else {
+                    document.getElementById('errorMessage').style.display = 'block';
+                    document.getElementById('successMessage').style.display = 'none';
+                    document.getElementById('explosionMessage').style.display = 'none';
+                    document.body.style.backgroundColor = '#1a1a1a';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
